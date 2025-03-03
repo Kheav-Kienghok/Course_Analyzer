@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
+import tkinter as tk
+from PIL import Image, ImageTk
 import os
 import sys
 
@@ -91,12 +93,24 @@ def set_icon(window):
         print(f"Error setting icon: {e}")
 
 
+# Function to load and display photo
+def capture_photo():
+    image_path = "images/images.png"
+    if os.path.exists(image_path):
+        img = Image.open(image_path)
+        img = img.resize((45, 45), Image.Resampling.LANCZOS)
+        img = img.convert("RGBA")
+        return ImageTk.PhotoImage(img)
+    else:
+        img = Image.new('RGBA', (45, 45), color=(200, 200, 200, 255))
+        return ImageTk.PhotoImage(img)
+
+
 def show_files():
-    pass
     """Function to show a new mini-frame with the file names in a new window."""
 
     customer_window = ctk.CTkToplevel(app)
-    customer_window.title("Course Analyzer File Selected")
+    customer_window.title("Course Analyzer")
 
     # Ensure the main window updates before getting its dimensions
     app.update_idletasks()
@@ -108,7 +122,7 @@ def show_files():
     main_height = app.winfo_height()
 
     # Dimensions of the toplevel window
-    width, height = 350, 350
+    width, height = 380, 380
 
     # Calculate the position to center the toplevel inside the main window
     x = main_x + (main_width - width) // 2
@@ -124,16 +138,32 @@ def show_files():
     # Delay setting the icon for 1000 ms (1 second)
     customer_window.after(500, set_icon, customer_window)
 
-    # Example content inside the new window
-    label = ctk.CTkLabel(customer_window, text="List of selected files:", font=("Arial", 14))
-    label.pack(pady=10)
 
-    # Example list of files (replace with actual file list)
-    file_list = excel_files
-    for file in file_list:
-        file_label = ctk.CTkLabel(customer_window, text=file, font=("Arial", 12))
-        file_label.pack()
+    # Label for selecting files
+    select_label = ctk.CTkLabel(customer_window, text="List of selected files:", font=("Arial", 14, "bold"))
+    select_label.pack(pady=10)
 
+    # Create a scrollable frame
+    scrollable_frame = ctk.CTkScrollableFrame(customer_window)
+    scrollable_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.7)
+
+    # Get list of .xlsx files
+    data = excel_files
+    
+
+    # Add labels and photos for each file
+    for file in data:
+        file = os.path.basename(file) 
+        frame = ctk.CTkFrame(scrollable_frame, corner_radius=10)
+        frame.pack(fill="x", pady=5, padx=5)
+        
+        img = capture_photo()
+        img_label = tk.Label(frame, image=img, bg="white")
+        img_label.image = img
+        img_label.pack(side="left", padx=5, pady=5)
+        
+        file_label = ctk.CTkLabel(frame, text=file, anchor="w", font=("Arial", 14))
+        file_label.pack(side="left", padx=10)
 
 
 # ============================== UI COMPONENTS ===============================

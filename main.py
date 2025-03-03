@@ -12,6 +12,8 @@ def main():
     if not os.path.exists(folder_path):
         print(f"Error: The folder '{folder_path}' does not exist.")
         return
+    
+    output = input("Enter a output: ")
 
     try:
         # Get the list of valid Excel files from the folder
@@ -28,7 +30,7 @@ def main():
         print("Processing completed.")
 
         # Save the final result to an Excel file
-        save_to_excel(final_result)
+        save_to_excel(final_result, selected_path=output)
 
     
     except (FileNotFoundError, ValueError) as e:
