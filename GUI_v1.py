@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
 import os
+import sys
 
 from src.file_checker import get_valid_excel_files
 from src.data_processing import process_excel_files, save_to_excel
@@ -9,20 +10,21 @@ from src.data_processing import process_excel_files, save_to_excel
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
-# Get the directory of the currently running script
-script_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Form the path to the icon file relative to the script
-icon_path = os.path.join(script_dir, "images", "excel_icon.ico")
-
 app = ctk.CTk()
 app.title("Course Analyzer")
+
+# Get the correct path for the icon
+if getattr(sys, 'frozen', False):  # If running as an executable
+    script_dir = sys._MEIPASS  # Temporary folder for bundled files
+else:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+icon_path = os.path.join(script_dir, "images", "excel_icon.ico")
 
 try: 
     app.iconbitmap(icon_path)
 except Exception as e:
-    pass
-
+    print(f"Error loading icon: {e}")  # Print error for debugging
 
 # Centering the window on the screen
 width, height = 550, 520
@@ -34,6 +36,10 @@ app.resizable(False, False)
 app.configure(bg="#ECF2FF")
 
 # ============================== FUNCTIONS ===============================
+
+# Global variable to hold the output directory
+excel_files, output_directory = None, None
+
 
 def select_folder():
 
@@ -52,11 +58,12 @@ def select_folder():
         else:
             status_label.configure(text="Status: No valid files found", text_color="red")
 
-
-
-
 def select_output_location():
-    pass
+
+    global output_directory
+
+    # Get the folder path where the files are located
+    output_directory = filedialog.askdirectory()
 
 
 def generate_result():
@@ -69,7 +76,7 @@ def generate_result():
     final_result = process_excel_files(excel_files)
 
     # Save the final result to an Excel file
-    save_to_excel(final_result)
+    save_to_excel(final_result, selected_path=output_directory)
 
     status_label.configure(text="Status: Processing Completed ✅", text_color="green")
 
@@ -115,14 +122,14 @@ def show_files():
     customer_window.grab_set()
 
     # Delay setting the icon for 1000 ms (1 second)
-    customer_window.after(1000, set_icon, customer_window)
+    customer_window.after(500, set_icon, customer_window)
 
     # Example content inside the new window
     label = ctk.CTkLabel(customer_window, text="List of selected files:", font=("Arial", 14))
     label.pack(pady=10)
 
     # Example list of files (replace with actual file list)
-    file_list = ["file1.xlsx", "file2.xlsx", "file3.xlsx"]
+    file_list = excel_files
     for file in file_list:
         file_label = ctk.CTkLabel(customer_window, text=file, font=("Arial", 12))
         file_label.pack()
